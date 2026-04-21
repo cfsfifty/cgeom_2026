@@ -1,0 +1,10 @@
+^C:\USERS\CFUEN\SOURCE\COMPUTATIONGEOMETRY_2026\CGEOM\EXAMPLES\LIB\GLEW-2.3.1\BUILD\CMAKE\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/cfuen/source/ComputationGeometry_2026/cgeom/examples/lib/glew-2.3.1/build/cmake -BC:/Users/cfuen/source/ComputationGeometry_2026/cgeom/examples/lib/glew-2.3.1/build/vc16 --check-stamp-file C:/Users/cfuen/source/ComputationGeometry_2026/cgeom/examples/lib/glew-2.3.1/build/vc16/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

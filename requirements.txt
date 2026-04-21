@@ -1,0 +1,7 @@
+numpy==2.2.3
+pandas==2.2.3
+PyOpenGL>=3.1.9
+PyOpenGL-accelerate>=3.1.9
+PyOpenGL-Demo>=3.1.1
+scipy>=1.15.2
+svg.py>=1.5.0

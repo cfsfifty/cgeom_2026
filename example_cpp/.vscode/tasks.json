@@ -1,0 +1,29 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: cl.exe build active file",
+            "command": "cl.exe",
+            "args": [
+                "/Zi",
+                "/EHsc",
+                "/nologo",
+                "/I${workspaceFolder}/../lib/glfw-3.4/include",
+                "/I${workspaceFolder}/../lib/glm-1.0.3",
+                "/Fe${fileDirname}/${fileBasenameNoExtension}.exe",
+                "${file}",
+                "/link /LIBPATH:${workspaceFolder}/../lib/glfw-3.4/lib /LIBPATH:${workspaceFolder}/../lib/glm-1.0.3/lib",
+                "glfw3.lib", "glm.lib", "glu32.lib", "opengl32.lib", "gdi32.lib", "user32.lib", "shell32.lib"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": "build",
+            "detail": "compiler: cl.exe"
+        }
+    ],
+    "version": "2.0.0"
+}

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\cfuen\source\ComputationGeometry_2026\cgeom\examples\lib\glew-2.3.1\build\vc17\CMakeFiles\19e8ae8e142c13e8b0cc0bd50c3587f7\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{DA294E36-81FB-342E-8133-7A55A4F68B31}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
