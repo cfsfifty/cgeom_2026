@@ -81,6 +81,9 @@ class FileObj:
                         self.indices.append(int(elements[i])-1)
                     continue
         print("read points", len(self.points), "polygon", len(self.indices))
+        if len(self.indices) == 0: # if no indices, create list from point coords list
+            for i in range(len(self.points)):
+                self.indices.append(i) 
         self.updateBBox()
 
     def writeObj(self, filename : str, points : list[tuple], indices : list[int]) -> None:
@@ -115,9 +118,6 @@ class FileObj:
     
     # List of indices into PointCoords list
     def getPolygonIndices (self) -> list[int]:
-        if len(self.indices) == 0: # if no indices, create list from point coords list
-            for i in range(len(self.points)):
-                self.indices.append(i) 
         assert(0 <= min(self.indices) and max(self.indices) < len(self.points))
         return self.indices
     
