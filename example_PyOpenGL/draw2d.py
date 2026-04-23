@@ -36,11 +36,11 @@ def initGL():
 def drawGeometry():
 	# Outline polygon
 	glLineWidth(2.0)
-	glBegin(GL_TRIANGLE_FAN)
-	#glBegin(GL_LINE_LOOP)
+	#glBegin(GL_TRIANGLE_FAN)
+	glBegin(GL_LINE_LOOP)
 	poly = state.getPolygon()
 	glColor3f  (1.0, 0.0, 0.0)  # Red
-	for poly_point in poly: # Last vertex same as first vertex
+	for i, poly_point in enumerate(poly): # Last vertex same as first vertex
 		#glColor3f  (random.random(), random.random(), random.random())  # Red
 		glVertex2fv(poly_point)
 	glEnd()
