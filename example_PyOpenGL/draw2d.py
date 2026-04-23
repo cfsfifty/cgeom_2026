@@ -109,8 +109,8 @@ def reshape(width, height):
  
 # Main function: GLUT runs as a console application starting at main() */
 def main():
-	#state.read("../models/5gon.obj")
-	state.read("../models/nrw.obj")
+	state.read("../models/star.obj")
+	#state.read("../models/nrw.obj")
 
 	glutInit(sys.argv)             # Initialize GLUT
 	glutInitDisplayMode(GLUT_DOUBLE) # Enable double buffered mode
