@@ -1,6 +1,8 @@
 '''
  Drawing a OBJ 2d-polygon
 '''
+from dataclasses import dataclass
+
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
@@ -17,12 +19,12 @@ windowPosY   = 50  # Windowed mode's top-left corner y
  
 # Projection clipping area
 # clipAreaXLeft, clipAreaXRight, clipAreaYBottom, clipAreaYTop;
-state   = FileObj.FileObj()
-stateGL = [ -1 ]
-#bbox_minx = -1.0
-#bbox_maxx = +1.0
-#bbox_miny = -1.0
-#bbox_maxy = +1.0
+@dataclass
+class AppState:
+	polygon  = FileObj.FileObj()
+	state_gl = [ -1 ]
+
+state = AppState()
 
 # Initialize OpenGL Graphics 
 def initGL():
@@ -36,20 +38,22 @@ def initGL():
 def drawGeometry():
 	# Outline polygon
 	glLineWidth(2.0)
+	glBegin(GL_POLYGON)
 	#glBegin(GL_TRIANGLE_FAN)
-	glBegin(GL_LINE_LOOP)
-	poly = state.getPolygon()
+	#glBegin(GL_LINE_LOOP)
+	point = state.polygon.getPointCoords()
 	glColor3f  (1.0, 0.0, 0.0)  # Red
-	for i, poly_point in enumerate(poly): # Last vertex same as first vertex
-		#glColor3f  (random.random(), random.random(), random.random())  # Red
-		glVertex2fv(poly_point)
+	for face in state.polygon.getPolygonIndices():
+		for i, idx in enumerate(face): # Last vertex same as first vertex
+			#glColor3f  (random.random(), random.random(), random.random())  # Red
+			glVertex2fv(point[idx])
 	glEnd()
 
 # Callback handler for window re-paint event
 def display():
 	glClear     (GL_COLOR_BUFFER_BIT) # Clear the color buffer
-	center_x = 0.5*(state.x[0] + state.x[1]) # refactor: move to "state"
-	center_y = 0.5*(state.y[0] + state.y[1])
+	center_x = 0.5*(state.polygon.x[0] + state.polygon.x[1]) # refactor: move to "state"
+	center_y = 0.5*(state.polygon.y[0] + state.polygon.y[1])
 	print("model-center", center_x, center_y)
 	glMatrixMode(GL_MODELVIEW)  # To operate on the ModelView matrix
 	glLoadIdentity()
@@ -61,19 +65,19 @@ def display():
 # Callback handler for window re-paint event, using display lists
 def displayDisplayList():
 	glClear     (GL_COLOR_BUFFER_BIT) # Clear the color buffer
-	center_x = 0.5*(state.x[1] + state.x[0]) # refactor: move to "state"
-	center_y = 0.5*(state.y[1] + state.y[0])
+	center_x = 0.5*(state.polygon.x[1] + state.polygon.x[0]) # refactor: move to "state"
+	center_y = 0.5*(state.polygon.y[1] + state.polygon.y[0])
 	print("model-center", center_x, center_y)
 	glMatrixMode(GL_MODELVIEW)  # To operate on the ModelView matrix
 	glLoadIdentity()
 	glTranslated  (-center_x, -center_y, 0.0)
 
-	if stateGL[0] < 0: # not compiled, then compile and execute
-		glNewList(stateGL[0], GL_COMPILE_AND_EXECUTE)
+	if state.state_gl[0] < 0: # not compiled, then compile and execute
+		glNewList(state.state_gl[0], GL_COMPILE_AND_EXECUTE)
 		drawGeometry()
 		glEndList()
 	else: # execute display-list
-		glCallList(stateGL[0])
+		glCallList(state.state_gl[0])
 	glutSwapBuffers()  # Swap front and back buffers (of double buffered mode)
  
 # Call back when the windows is re-sized */
@@ -88,8 +92,8 @@ def reshape(width, height):
 	# Set the aspect ratio of the clipping area to match the viewport
 	glMatrixMode(GL_PROJECTION)  # To operate on the Projection matrix
 	glLoadIdentity()             # Reset the projection matrix
-	size_x = 0.5*(state.x[1] - state.x[0]) # refactor: move to "state"
-	size_y = 0.5*(state.y[1] - state.y[0])
+	size_x = 0.5*(state.polygon.x[1] - state.polygon.x[0]) # refactor: move to "state"
+	size_y = 0.5*(state.polygon.y[1] - state.polygon.y[0])
 	size   = max(size_x, size_y)
 	if width >= height:
 		clipAreaXLeft   = -size * aspect
@@ -109,8 +113,8 @@ def reshape(width, height):
  
 # Main function: GLUT runs as a console application starting at main() */
 def main():
-	state.read("../models/star.obj")
-	#state.read("../models/nrw.obj")
+	state.polygon.read("../models/5gon.obj")
+	#state.polygon.read("../models/nrw.obj")
 
 	glutInit(sys.argv)             # Initialize GLUT
 	glutInitDisplayMode(GLUT_DOUBLE) # Enable double buffered mode
