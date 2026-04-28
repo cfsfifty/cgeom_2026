@@ -21,10 +21,10 @@ windowPosY   = 50  # Windowed mode's top-left corner y
 # clipAreaXLeft, clipAreaXRight, clipAreaYBottom, clipAreaYTop;
 @dataclass
 class AppState:
-	polygon  = FileObj.FileObj()
-	state_gl = [ -1 ]
+	polygon  : FileObj.FileObj
+	state_gl : list[int]
 
-state = AppState()
+state = AppState(FileObj.FileObj(), [ -1 ])
 
 # Initialize OpenGL Graphics 
 def initGL():
