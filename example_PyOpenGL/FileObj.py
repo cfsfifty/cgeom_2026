@@ -1,6 +1,6 @@
 import math
-from typing import Iterable
 import numpy as np
+from   typing import Iterable
 import locale
 from   locale import atof
 
@@ -8,7 +8,7 @@ from   locale import atof
 class FileObj:
     # 
     def __init__(self):
-        self.dtype = np.float64
+        self.dtype = np.float32
 
     # update from self.indices, self.points
     def updateBBox (self):
@@ -124,8 +124,8 @@ class FileObj:
     def getPointCoords (self) -> list[tuple]:
         return self.points
     
-    # List of indices into PointCoords list
-    def getPolygonIndices (self) -> list[int]:
+    # List of faces (indices into PointCoords list)
+    def getPolygonIndices (self) -> list[list[int]]:
         return self.indices
     
     # List of polygon coords tuples
