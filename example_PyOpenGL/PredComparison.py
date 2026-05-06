@@ -1,51 +1,46 @@
 '''
- Grahams Scan
+ Predicate 'rightTurn' visualization
 '''
 from dataclasses import dataclass
-from math import sqrt
-from typing import Iterable
 import numpy as np
-import random
 import math
-import copy
 import time
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from PIL import Image
  
 # Global variables
-title        = "LineDist*Det:" # Windowed mode's title
+title        = "LineDist-Det:" # Windowed mode's title
 windowWidth  = 600 # Windowed mode's width
 windowHeight = 600 # Windowed mode's height
 windowPosX   = 50  # Windowed mode's top-left corner x
 windowPosY   = 50  # Windowed mode's top-left corner y
- 
+
 # Application state
 @dataclass
 class AppState:
-	#polygon      : FileObj.FileObj
 	state_gl     : list[int]
 	texture      : np.ndarray
-	slope        : float
-	step         : float
-	dist         : float
+	line_slope   : float # line-segment slope
+	line_slope_step : float # step size for slope changes
+	line_length  : float # length of line-segment
 	win_width    : float
 	win_height   : float
-
-state   = AppState([ -1 ], np.empty((128,128,3)), 0.0, 0.2, 1.0, windowWidth, windowHeight)
+state   = AppState([ -1 ], np.empty((128,128,3)), 0.0, 0.2, 1.2, windowWidth, windowHeight)
 
 # Initialize OpenGL Graphics 
 def initGL() -> None:
 	glClearColor(0.0, 0.0, 0.0, 1.0) # Set background (clear) color to black
 
-	glLineWidth(2.0)
+	# points or lines
 	glEnable(GL_POINT_SMOOTH)
+	glPointSize(1.0)
+	glLineWidth(2.0)
 
 	# for polygonal types, not line types
 	glFrontFace  (GL_CCW) # GL_CCW is the default 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) # front face (Vorderseite)
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) # front and back face
 
 	state.state_gl[0] = glGenTextures(1)
 	glPixelStorei  (GL_UNPACK_ALIGNMENT, 1)
@@ -59,9 +54,10 @@ def initGL() -> None:
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL,  0)
 
 def drawGeometry() -> None:
+	# draw textured quad
 	glColor3f(1.0, 1.0, 1.0)
 	glEnable(GL_TEXTURE_2D)
-	glBegin(GL_TRIANGLE_FAN)
+	glBegin (GL_TRIANGLE_FAN)
 	glTexCoord2f(0.0, 0.0)
 	glVertex2f  (0, 0)
 	glTexCoord2f(0.0, 1.0)
@@ -73,11 +69,11 @@ def drawGeometry() -> None:
 	glEnd()
 	glDisable(GL_TEXTURE_2D)
 
-	# Outline points
+	# draw line
 	glColor3f(0.0, 0.0, 0.0)
 	glBegin(GL_LINES)
-	glVertex2f  (0.0,        0.5*state.win_height)
-	glVertex2f  (state.dist, 0.5*state.win_height+state.dist*state.slope)
+	glVertex2f(0.0,        0.5*state.win_height)
+	glVertex2f(state.line_length, 0.5*state.win_height+state.line_length*state.line_slope)
 	glEnd()
 
 # Callback handler for window re-paint event
@@ -89,7 +85,7 @@ def display() -> None:
 	drawGeometry()
 	glutSwapBuffers()  # Swap front and back buffers (of double buffered mode)
  
-# Call back when the windows is re-sized */
+# Callback handler when the windows is re-sized
 def reshape(width : int, height : int) -> None:
 	# Compute aspect ratio of the new window
 	if height == 0: 
@@ -117,23 +113,25 @@ def reshape(width : int, height : int) -> None:
 	state.win_height = height
 	calcDifferences(state.texture)
 
-def keyPress (key, x, y) -> None:
+# Callback handler for keypress
+def keyPress (key : int, x : int, y : int) -> None:
 	if key == b'z':
-		state.dist /= 1.1
+		state.line_length /= 1.1
 	if key == b'Z':
-		state.dist *= 1.1
+		state.line_length *= 1.1
 	if key == b'!':
-		state.slope = -state.slope
+		state.line_slope = -state.line_slope
 	if key == b'+':
-		state.step  *= 1.1
+		state.line_slope_step  *= 1.1
 	if key == b'-':
-		state.step  /= 1.1
+		state.line_slope_step  /= 1.1
 	if key == b'y':
-		state.slope -= state.step
+		state.line_slope -= state.line_slope_step
 	if key == b'Y':
-		state.slope += state.step
+		state.line_slope += state.line_slope_step
 
-	info = 	title + " slope(y)=%f, rate(+-)=%f, len(z)=%f" % (state.slope, state.step, state.dist)
+	info = 	title + " slope('y')=%f, rate('+'-')=%f, len('z')=%f" % (state.line_slope, state.line_slope_step, state.line_length)
+	# info string as ascii binary
 	glutSetWindowTitle(info.encode(encoding="ascii"))
 	calcDifferences(state.texture)
 	glutPostRedisplay()
@@ -145,27 +143,27 @@ def rightTurn (p : tuple, q : tuple, r : tuple) -> float:
 	n  = ( -d1[1], d1[0])
 	len= math.sqrt(np.dot(n, n))
 	n  = (n[0]/len, n[1]/len) # normalized
-	# scalar product n^t*dr
+	# scalar product n^t*d2
 	return np.dot(n, d2)
 
 def rightTurnDet (p : tuple, q : tuple, r : tuple) -> float:
 	''' Predicate: rightTurn r wrt. pq. Classification wrt. signed volume
-		of parallelogram (p, q, q, r-q) . '''
+		of parallelogram (p, q, q, r-p) . '''
 	d1    = (q[0]-p[0], q[1]-p[1])
 	d2    = (r[0]-p[0], r[1]-p[1])
 	diag1 =  d1[0]*d2[1] 
 	diag2 = -d1[1]*d2[0]
 	return diag1+diag2
 
+# simple colormap: blue (negative) via white (0.0) to red (positive)
 def colorMap (value : float, bias : float, radius : float) -> tuple:
 	# clamping to [0.0, 1.0]
-	value = 100*(value)/radius+0.5
+	value = 100*(value+bias)/radius+0.5
 	#print(f" {value}", end="")
 	if value < 0.0: 
 		value = 0.0
 	if value > 1.0: 
 		value = 1.0
-
 	if value < 0.5:
 		# Kalt bis Weiß (Blau -> Weiß)
 		# Blau nimmt ab, Rot und Grün nehmen zu
@@ -183,42 +181,40 @@ def colorMap (value : float, bias : float, radius : float) -> tuple:
 	return (r, g, b)
 
 def calcDifferences (pix : np.ndarray) -> None:
-	#print(image.shape)
 	width, height, comp = pix.shape
 	#pix = np.array(image)
 	#print(np.info(pix))
 
 	tex_width  = float(max(width, height))
 	grid_width = 1.0/float(tex_width) #max(state.win_width, state.win_height)
+	radius = tex_width*tex_width
+
 	p = (0.0, 0.0)
-	qlen = state.dist/math.sqrt(1.0 + state.slope*state.slope)
-	q = (1.0*qlen, state.slope*qlen)
-	bias = tex_width*tex_width
-	interval = (math.inf, -math.inf)
+	qscale = state.line_length/math.sqrt(1.0 + state.line_slope*state.line_slope)
+	q = (1.0*qscale, state.line_slope*qscale)
+	predRange = (math.inf, -math.inf)
 	for y in range(height):
 		for x in range(width):
 			r  = (float(x), float(y)-0.5*height)
+
 			p1 = rightTurn   (p, q, r)
 			p2 = rightTurnDet(p, q, r)
-			scalar   = (p1-p2)
-			#p1 
-			#(p1*p2)
-			interval = (min(interval[0], scalar), max(interval[1], scalar))
-			pix[x, y, :] = colorMap(scalar, bias, bias)
-	print("predicate-range=", interval)
+			pred   = (p1-p2) # difference of p1 and p2
+			#pred   = p1      # value of p1
+			#pred   = (p1*p2) # product of p1 and p2
+			predRange = (min(predRange[0], pred), max(predRange[1], pred))
+			pix[x, y, :] = colorMap(pred, 0.0, radius)
+	print("predicate-range=", predRange)
 
-	#state.texture = Image.fromarray(pix)
-	#data = np.array(image.getdata(None))
-	#print(np.info(data))
-	data = pix.reshape((3*width*height,1))
+	pixData = pix.reshape((3*width*height,1))
 	glBindTexture(GL_TEXTURE_2D, state.state_gl[0])
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data)
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixData)
 
-# Called back when the timer expired 
+# Callback handler when the timer expired 
 #def Timer(value : int) -> None:
 #glutTimerFunc(10, Timer, 0) # subsequent timer call at milliseconds
  
-# Main function: GLUT runs as a console application starting at main() 
+# GLUT runs as a console application starting at main() 
 def main(argv : list[str]) -> None:
 	# Open image
 	state.texture = np.empty(shape=(128, 128, 3), dtype=np.uint8)
@@ -227,7 +223,7 @@ def main(argv : list[str]) -> None:
 	glutInitDisplayMode(GLUT_DOUBLE) # Enable double buffered mode
 	glutInitWindowSize (windowWidth, windowHeight)  # Initial window width and height
 	glutInitWindowPosition(windowPosX, windowPosY)  # Initial window top-left corner (x, y)
-	info = 	title + " slope(y)=%f, rate(+-)=%f, len(z)=%f" % (state.slope, state.step, state.dist)
+	info = 	title + " slope('y')=%f, rate('+'-')=%f, len('z')=%f" % (state.line_slope, state.line_slope_step, state.line_length)
 	glutCreateWindow(info.encode(encoding="ascii"))
 	glutReshapeFunc(reshape)      # Register callback handler for window re-shape
 	glutDisplayFunc(display)      # Register callback handler for window re-paint
