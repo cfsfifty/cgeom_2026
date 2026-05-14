@@ -1,0 +1,9 @@
+# quad as parallelogram (in m, horizontal-deviation 1mm)
+v   1.100  1.000
+v  -0.400  1.000
+v  -0.390 -0.800
+v   1.110 -0.800
+# ccw
+f   1 2 3 4
+# cw
+#f   1 4 3 2
