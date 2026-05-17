@@ -27,14 +27,17 @@ class AppState:
 	line_length  : float # length of line-segment
 	win_width    : float
 	win_height   : float
-state   = AppState([ -1 ], np.empty((128,128,3)), 0.0, 0.2, 1.2, windowWidth, windowHeight)
+state   = AppState([ -1 ], np.empty((128,128,3)), 0.0, 0.01, 1.2, windowWidth, windowHeight)
 
 # Initialize OpenGL Graphics 
 def initGL() -> None:
 	glClearColor(0.0, 0.0, 0.0, 1.0) # Set background (clear) color to black
 
 	# points or lines
+	glEnable(GL_LINE_SMOOTH)
+	glHint  (GL_LINE_SMOOTH_HINT,  GL_NICEST)
 	glEnable(GL_POINT_SMOOTH)
+	glHint  (GL_POINT_SMOOTH_HINT, GL_NICEST)
 	glPointSize(1.0)
 	glLineWidth(2.0)
 
@@ -45,8 +48,8 @@ def initGL() -> None:
 	state.state_gl[0] = glGenTextures(1)
 	glPixelStorei  (GL_UNPACK_ALIGNMENT, 1)
 	glBindTexture  (GL_TEXTURE_2D, state.state_gl[0])
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 	# mimap not used here: write to baselevel!
@@ -197,10 +200,10 @@ def calcDifferences (pix : np.ndarray) -> None:
 		for x in range(width):
 			r  = (float(x), float(y)-0.5*height)
 
-			p1 = rightTurn   (p, q, r)
+			p1 = rightTurn   (p, q, r)+0.5
 			p2 = rightTurnDet(p, q, r)
-			pred   = (p1-p2) # difference of p1 and p2
-			#pred   = p1      # value of p1
+			#pred   = (p1-p2) # difference of p1 and p2
+			pred   = p1      # value of p1
 			#pred   = (p1*p2) # product of p1 and p2
 			predRange = (min(predRange[0], pred), max(predRange[1], pred))
 			pix[x, y, :] = colorMap(pred, 0.0, radius)
