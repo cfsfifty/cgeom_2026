@@ -8,7 +8,7 @@ from   locale import atof
 class FileObj:
     # 
     def __init__(self):
-        self.dtype = np.float32
+        self.dtype = float
 
     # update from self.indices, self.points
     def updateBBox (self):
@@ -29,9 +29,9 @@ class FileObj:
 
     #
     def read (self, filename : str) -> None:
-        self.readWithType(filename, dtype=float)
+        self.readWithDType(filename, dtype=self.dtype)
     #
-    def readWithType (self, filename : str, dtype : type) -> None:
+    def readWithDType (self, filename : str, dtype : type) -> None:
         locale.setlocale(locale.LC_ALL, "en_US.utf8")
         self.dtype    = dtype
         self.points   = list()
@@ -54,7 +54,7 @@ class FileObj:
                 assert(len(elements) >= 1)
                 if elements[0] == "v":
                     assert(2 <= len(elements) and len(elements) <= 4)
-                    print(len(elements))
+                    #print(len(elements))
                     if len(elements) == 2: # 1d
                         x = atof(elements[1])
                         coord = (self.dtype(x))    
