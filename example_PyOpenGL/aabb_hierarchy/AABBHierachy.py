@@ -108,6 +108,25 @@ def draw_node(l : int,  level : int, node : BinaryNode.BinaryNode):
 	global state
 	model_center = state.model.bbox.center()
 	#print(l, level)
+
+	if node.left_node == None and node.right_node == None: 
+		# in leaf node: draw triangles
+		glEnable     (GL_LIGHTING)
+		glPolygonMode(GL_FRONT, GL_FILL)
+		glColor3f  (0.5, 0.5, 0.5)
+		for i in range(node.left, node.right):
+			f = node.indices[i]
+			glBegin(GL_TRIANGLE_FAN)
+			for p in node.faces[f]:
+				# normal is only approximate!
+				normal = [ node.points[p][i] for i in range(3) ]
+				v3.add_inplace  (normal, model_center, -1.0)
+				#v3.scale_inplace(normal, 1.0/v3.length(normal))
+				glNormal3fv(normal)
+				glVertex3fv(node.points[p])
+			glEnd()
+		return
+
 	if l == level:
 		glDisable(GL_LIGHTING)
 		glPolygonMode(GL_FRONT, GL_LINE)
@@ -156,25 +175,6 @@ def draw_node(l : int,  level : int, node : BinaryNode.BinaryNode):
 		glVertex3f(bbox[1][0], bbox[1][1], bbox[1][2])
 		glVertex3f(bbox[1][0], bbox[0][1], bbox[1][2])
 		glEnd()
-		if node.left_node == None and node.right_node == None: 
-			# in leaf node: draw triangles
-			glEnable     (GL_LIGHTING)
-			glPolygonMode(GL_FRONT, GL_FILL)
-			glColor3f  (0.5, 0.5, 0.5)
-			for i in range(node.left, node.right):
-				f = node.indices[i]
-				glBegin(GL_TRIANGLE_FAN)
-				for p in node.faces[f]:
-					# normal is only approximate!
-					# also slow, why?
-					normal = [ node.points[p][i] for i in range(3) ]
-					v3.add_inplace  (normal, model_center, -1.0)
-					#v3.scale_inplace(normal, 1.0/v3.length(normal))
-
-					glNormal3fv(normal)
-					glVertex3fv(node.points[p])
-				glEnd()
-			return
 
 	if node.left_node != None: # visit left node
 		draw_node(l+1, level, node.left_node)
@@ -223,6 +223,9 @@ def display():
 	center = state.model.bbox.center()
 	#print("model-center", center)
 	glTranslatef  (-center[0], -center[1], -center[2])
+	cam_len   = v3.length(state.cam_dir)
+	light_dir = ( state.cam_dir[0]/cam_len, state.cam_dir[1]/cam_len, state.cam_dir[2]/cam_len, 0.0 )
+	glLightfv(GL_LIGHT0, GL_POSITION, light_dir) 
 
 	draw_geometry()
 	glutSwapBuffers()  # Swap front and back buffers (of double buffered mode)
@@ -332,13 +335,13 @@ def main():
 
 	# create hierarchy for model
 	print("local directory", os.getcwd())
-	state.model.read("../models_3d/jet.obj")
+	state.model.read("../models_3d/teapot.obj")
 	points = state.model.getPointCoords()
 	faces  = state.model.getFaces()
 	# center model in origin
-	model_center = face_center(list(range(len(points))), points)
-	for i, p in enumerate(points):
-		points[i] = ( p[0]-model_center[0], p[1]-model_center[1], p[2]-model_center[2] )
+	#model_center = state.model.bbox.center()
+	#for i, p in enumerate(points):
+	#	points[i] = ( p[0]-model_center[0], p[1]-model_center[1], p[2]-model_center[2] )
 
 	index_list = [list(), list(), list()]
 	index_list[0] = [f for f in range(len(faces))]

@@ -12,14 +12,14 @@ class ProgramState:
 	level      : int
 	max_level  : int
 
-	cam_dir    : tuple[float]
-	start_dir  : tuple[float]
+	cam_dir    : list[float]
+	start_dir  : list[float]
 	cam_scale  : float
 	inter_x    : int
 	inter_y    : int
 	inter_type : int
 
-	def __init__(self, cam_dir):
+	def __init__(self, cam_dir : list[float]):
 		self.model = FileObj3d.FileObj3d()
 		self.node  = None
 
