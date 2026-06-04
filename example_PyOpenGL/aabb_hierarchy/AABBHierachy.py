@@ -24,18 +24,20 @@ windowHeight = 600 # Windowed mode's height
 windowPosX   = 50  # Windowed mode's top-left corner x
 windowPosY   = 50  # Windowed mode's top-left corner y
 
-def face_center (indices : list[int], points : list[Iterable]):
+def face_center (indices : list[int], points : list[tuple]):
 	center = [ 0.0 for i in range(3) ]
 	for idx in indices:
 		v3.add_inplace(center, points[idx])
-	v3.scale_inplace(center, 1.0/float(len(indices)))
+	center[0] /= float(len(indices))
+	center[1] /= float(len(indices))
+	center[2] /= float(len(indices))
 	return center
-def face_min (indices : list[int], points : list[Iterable]):
+def face_min (indices : list[int], points : list[tuple]):
 	center = [ math.inf for i in range(3) ]
 	for idx in indices:
 		v3.min_inplace(center, points[idx])
 	return center
-def face_max (indices : list[int], points : list[Iterable]):
+def face_max (indices : list[int], points : list[tuple]):
 	center = [ -math.inf for i in range(3) ]
 	for idx in indices:
 		v3.max_inplace(center, points[idx])
