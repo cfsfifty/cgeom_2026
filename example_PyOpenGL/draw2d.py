@@ -38,16 +38,18 @@ def initGL():
 def drawGeometry():
 	# Outline polygon
 	glLineWidth(2.0)
-	glBegin(GL_POLYGON)
-	#glBegin(GL_TRIANGLE_FAN)
-	#glBegin(GL_LINE_LOOP)
 	point = state.polygon.getPointCoords()
-	glColor3f  (1.0, 0.0, 0.0)  # Red
-	for face in state.polygon.getPolygonIndices():
-		for i, idx in enumerate(face): # Last vertex same as first vertex
-			#glColor3f  (random.random(), random.random(), random.random())  # Red
+	#glColor3f  (1.0, 0.0, 0.0)  # Red
+	for fi, face in enumerate(state.polygon.getPolygonIndices()):
+		#if fi != 4:
+		#	continue
+		glBegin(GL_POLYGON)
+		#glBegin(GL_TRIANGLE_FAN)
+		#glBegin(GL_LINE_LOOP)
+		glColor3f  (random.random(), random.random(), random.random())  # Red
+		for idx in face: # Last vertex same as first vertex
 			glVertex2fv(point[idx])
-	glEnd()
+		glEnd()
 
 # Callback handler for window re-paint event
 def display():
@@ -113,7 +115,10 @@ def reshape(width, height):
  
 # Main function: GLUT runs as a console application starting at main() */
 def main():
-	state.polygon.read("../models/5gon.obj")
+	#state.polygon.read("../models/Niedersachsen_20260616.obj")
+	#state.polygon.read("../models/aroundNRW_20260616.obj")
+	state.polygon.read("../models/star.obj")
+	#state.polygon.read("../models/5gon.obj")
 	#state.polygon.read("../models/nrw.obj")
 
 	glutInit(sys.argv)             # Initialize GLUT
