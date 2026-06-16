@@ -1,17 +1,16 @@
 import datetime
 
-triangulateAsFan = False
-
 # "layer" is a QgsVectorLayer instance
 layer = iface.activeLayer()
 
 datetimeString = datetime.datetime.now().strftime("%Y%m%d")
-with open(f"C:/Users/cfuen/source/ComputationGeometry_2025/{layer.name()}_{datetimeString}.obj", "w") as outFile:
+with open(f"c:/users/user/Talks/cgeom_2026/example_qgis/{layer.name()}_{datetimeString}.obj", "w") as outFile:
     print(f"# Layer '{layer.name()}' from {datetimeString}", file=outFile)
 
     # all features
     #selectFeatures = layer.getFeatures()
     selectFeatures = layer.selectedFeatures()
+    num_verts = 0
     for feature in selectFeatures:    
         # retrieve every feature with its geometry and attributes
         print("Feature ID: ", feature.id())
@@ -52,14 +51,10 @@ with open(f"C:/Users/cfuen/source/ComputationGeometry_2025/{layer.name()}_{datet
                         for p in points:
                             print(f"v {p[0]} {p[1]}", file=outFile, end='\n')
  
-                        if not triangulateAsFan:
-                            print(f"f", file=outFile, end='')
-                            for pi in range(len(points)):
-                                print(f" {pi+1}", file=outFile, end='')
-                            print(f"", file=outFile, end='\n')
-                        else:
-                            for pi in range(2, len(points)):
-                                print(f"f 1", file=outFile, end='')
-                                print(f" {pi} {pi+1}", file=outFile, end='\n')
+                        print(f"f", file=outFile, end='')
+                        for pi in range(len(points)):
+                            print(f" {num_verts+pi+1}", file=outFile, end='')
+                        print(f"", file=outFile, end='\n')
+                    num_verts += len(points)
         else:
             print("Unknown or invalid geometry")
