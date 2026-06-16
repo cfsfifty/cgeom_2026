@@ -37,8 +37,10 @@ class FileObj:
         self.points   = list()
         self.indices  = list()
         self.filename = filename
+
         with open(self.filename, 'r') as file:
-            num_line = 0
+            num_line   = 0
+            group_name = "none"
             while file:
                 line      = file.readline()
                 num_line += 1
@@ -55,14 +57,17 @@ class FileObj:
                 if elements[0] == "v":
                     assert(2 <= len(elements) and len(elements) <= 4)
                     #print(len(elements))
+                    coord = None
                     if len(elements) == 2: # 1d
                         x = atof(elements[1])
+                        assert(len(coord)==1 if coord else True)
                         coord = (self.dtype(x))    
                     if len(elements) == 3: # 2d
                         #x = atof(elements[1])
                         #y = atof(elements[2])
                         x = self.dtype(elements[1])
                         y = self.dtype(elements[2])
+                        assert(len(coord)==2 if coord else True)
                         coord = (self.dtype(x), self.dtype(y))   
                     if len(elements) == 4: # 3d
                         #x = atof(elements[1])
@@ -71,12 +76,13 @@ class FileObj:
                         x = self.dtype(elements[1])
                         y = self.dtype(elements[2])
                         z = self.dtype(elements[3])
+                        assert(len(coord)==3 if coord else True)
                         coord = (self.dtype(x), self.dtype(y), self.dtype(z))    
                     self.points.append(coord)
                     continue
                 if elements[0] == "f":
-                    if len(self.indices) == 0: # new index list
-                        self.indices.append(list())
+                    # new index list
+                    self.indices.append(list())
                     #if len(self.indices) > 0:
                     #    print("WARNING: skipped additional face in line", num_line)
                     #    self.indices.clear() # clear list with each tag 'f', so only last face persists
@@ -85,6 +91,12 @@ class FileObj:
                         # indices in OBJ are 1 based
                         self.indices[-1].append(int(elements[i])-1)
                     continue
+                if elements[0] == "g":
+                    if len(elements) >= 2:
+                        group_name = elements[1] 
+                    print("starting ", group_name)
+                    continue
+                print("unknown tag", elements[0])
         print("read points", len(self.points), "polygon", len(self.indices))
 
         if len(self.indices) == 0: # if no faces, create list from point coords list
