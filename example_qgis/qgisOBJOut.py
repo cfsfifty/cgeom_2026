@@ -10,7 +10,7 @@ with open(f"c:/users/user/Talks/cgeom_2026/example_qgis/{layer.name()}_{datetime
     # all features
     #selectFeatures = layer.getFeatures()
     selectFeatures = layer.selectedFeatures()
-    num_verts = 0
+    poly_num_verts = 0
     for feature in selectFeatures:    
         # retrieve every feature with its geometry and attributes
         print("Feature ID: ", feature.id())
@@ -45,16 +45,19 @@ with open(f"c:/users/user/Talks/cgeom_2026/example_qgis/{layer.name()}_{datetime
             else:
                 arr = geom.asMultiPolygon()
                 print("MultiPolygon: ", arr)
-                for (gi, g) in enumerate(arr):
+                for faces in arr:
                     print(f"g {feature['name']}", file=outFile, end='\n')
-                    for points in g:
-                        for p in points:
+                    for points in faces:
+                        for pi, p in enumerate(points):
+                            if pi == len(points)-1:
+                               break 
                             print(f"v {p[0]} {p[1]}", file=outFile, end='\n')
  
                         print(f"f", file=outFile, end='')
-                        for pi in range(len(points)):
-                            print(f" {num_verts+pi+1}", file=outFile, end='')
+                        for fi in range(len(points)-1): # last point equals first point; omit
+                            gi = poly_num_verts+fi+1
+                            print(f" {gi}", file=outFile, end='')
                         print(f"", file=outFile, end='\n')
-                    num_verts += len(points)
+                        poly_num_verts += len(points)-1
         else:
             print("Unknown or invalid geometry")
