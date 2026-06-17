@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from math import *
+import math
+import numpy as np
 import FileObj
 import random
  
@@ -41,12 +42,15 @@ def drawGeometry():
 	point = state.polygon.getPointCoords()
 	#glColor3f  (1.0, 0.0, 0.0)  # Red
 	for fi, face in enumerate(state.polygon.getPolygonIndices()):
-		#if fi != 4:
+		#if fi > 0:
 		#	continue
-		glBegin(GL_POLYGON)
+		#glBegin(GL_POLYGON)
 		#glBegin(GL_TRIANGLE_FAN)
-		#glBegin(GL_LINE_LOOP)
+		glBegin(GL_LINE_LOOP)
 		glColor3f  (random.random(), random.random(), random.random())  # Red
+		d1 = np.array(point[face[1]])-np.array(point[face[0]])
+		d2 = np.array(point[face[2]])-np.array(point[face[0]])
+		print("orient", np.cross(d1/np.linalg.norm(d1), d2/np.linalg.norm(d2)))
 		for idx in face: # Last vertex same as first vertex
 			glVertex2fv(point[idx])
 		glEnd()
@@ -115,9 +119,9 @@ def reshape(width, height):
  
 # Main function: GLUT runs as a console application starting at main() */
 def main():
-	#state.polygon.read("../models/Niedersachsen_20260616.obj")
-	#state.polygon.read("../models/aroundNRW_20260616.obj")
-	state.polygon.read("../models/star.obj")
+	state.polygon.read("../models/Niedersachsen_20260617.obj")
+	#state.polygon.read("../models/aroundNRW_20260617.obj")
+	#state.polygon.read("../models/star.obj")
 	#state.polygon.read("../models/5gon.obj")
 	#state.polygon.read("../models/nrw.obj")
 
