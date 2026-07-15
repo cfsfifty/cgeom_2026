@@ -151,6 +151,14 @@ def below(a, b):
 def cross(ax, ay, bx, by):
     return ax * by - ay * bx
 
+def isConvexCCW (v1 : Vertex, v2 : Vertex, v : Vertex) -> bool:
+    dx1 = v.x -v1.x
+    dy1 = v.y -v1.y            
+    dx2 = v2.x  -v1.x
+    dy2 = v2.y  -v1.y            
+    det = (dx1*dy2 -dy1*dx2)
+    return det <= 0.0 # v is left
+
 # ---------- 1. Klassifikation (Definition 3) ----------
 START, END, REGULAR, SPLIT, MERGE, UNKNOWN = 'start', 'end', 'regular', 'split', 'merge', 'unknown'
 
@@ -187,14 +195,14 @@ class SweepEdge:
         self.kind : str = UNKNOWN
         self.helper : HalfEdge = he # helper vertex
         self.helperIsMerge  : bool = False # is helper vertex a merge vertex?
-        
-    def isInteriorRight(self) -> bool:
-        ''' Innenraum rechts von v? Also v auf der absteigenden (linken) Kette. '''
-        assert(not self.he.prev is None and not self.he.next is None)
-        return below(self.he.origin, self.he.prev.origin) and below(self.he.next.origin, self.he.origin)  
 
     def __str__ (self):
         return str(self.he) + "(" + str(self.kind) + "):" + str(self.helperIsMerge) 
+
+def isInteriorRight(he : HalfEdge) -> bool:
+    ''' Innenraum rechts von v? Also v auf der absteigenden (linken) Kette. '''
+    assert(not he.prev is None and not he.next is None)
+    return below(he.origin, he.prev.origin) and below(he.next.origin, he.origin)  
 
 def makeMonotone(vertices : list[HalfEdge], face_objects : list[Face]):
     T       : list[SweepEdge] = list()                                          # aktive Kanten (linke Innenkanten)
@@ -212,11 +220,7 @@ def makeMonotone(vertices : list[HalfEdge], face_objects : list[Face]):
             v2 = e.he.next.origin
             assert(not v2 is None)
 
-            dx1 = vi.x -v1.x
-            dy1 = vi.y -v1.y            
-            dx2 = v2.x  -v1.x
-            dy2 = v2.y  -v1.y            
-            rightSide = (dx1*dy2 -dy1*dx2 >= 0.0)
+            rightSide = not isConvexCCW(v1, v2, vi)
             if rightSide:
                 return last
             last = e
@@ -236,12 +240,8 @@ def makeMonotone(vertices : list[HalfEdge], face_objects : list[Face]):
             assert(not e.he.next is None)
             v2 = e.he.next.origin
             assert(not v2 is None)
-            dx1 = v.x -v1.x
-            dy1 = v.y -v1.y            
-            dx2 = v2.x-v1.x
-            dy2 = v2.y-v1.y            
             # classifying one point se.he.origin of se.he is enough, as no intersections!
-            rightSide = (dx1*dy2 -dy1*dx2 >= 0.0)
+            rightSide = not isConvexCCW(v1, v2, v)
             if rightSide: # insert before e
                 T.insert(i, se)
                 return
@@ -296,7 +296,7 @@ def makeMonotone(vertices : list[HalfEdge], face_objects : list[Face]):
                 ej.helper, ej.helperIsMerge = ei.he, True
 
         else:  # REGULAR
-            if ei.isInteriorRight(): # left side
+            if isInteriorRight(ei.he): # left side
                 if eprev.helperIsMerge:
                     h1 = insertDiagonal (ei.he, eprev.helper, face_objects)
                 if eprev in T: # CF do binary search, but len(T) is small
