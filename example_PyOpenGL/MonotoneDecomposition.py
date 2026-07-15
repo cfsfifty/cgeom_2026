@@ -75,8 +75,8 @@ class HalfEdge:
         return str(self.origin) + "*" + repr(self) + "#" + repr(self.prev) +"#" + repr(self.next)
 
 class Face:
-    def __init__(self):
-        self.he = None
+    def __init__(self, he : HalfEdge = None):
+        self.he = he
     def getHE (self) -> list[HalfEdge]:
         ''' Get all half-edges starting in self.he. '''
         face_hes = list()
@@ -332,6 +332,14 @@ def makeMonotone(vertices : list[HalfEdge], face_objects : list[Face]):
             if he == face.he:
                 i += 1
                 break
+    # set all HalfEdge.face links correctly
+    for face in face_objects:
+        he = face.he
+        while True:
+            he = he.next
+            he.face = face
+            if he == face.he:
+                break
     return face_objects
 
 
@@ -457,5 +465,5 @@ def run(filename):
 
 if __name__ == '__main__':
     #run("../models/nrw.obj")
-    #run("../models/PNonConvexSimple1_ccw.obj")
-    run("../models/PNonConvexSimple2_ccw.obj")
+    run("../models/PNonConvexSimple1_ccw.obj")
+    #run("../models/PNonConvexSimple2_ccw.obj")
