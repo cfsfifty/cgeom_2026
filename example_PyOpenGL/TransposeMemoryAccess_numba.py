@@ -6,6 +6,7 @@ import numpy as np
 import time
 import copy
 from numba import njit
+import matplotlib.pyplot as plt 
 
 def benchmark(func, matrix, repeats=5, copy_matrix=False):
 	times = []
@@ -68,16 +69,21 @@ def transpose_numpy_inplace(matrix : np.ndarray) -> np.ndarray:
 			matrix[j,i] = matrix_ij
 	return matrix
 
-N_values = [100, 400, 1000, 2000, 4000]
+N_values = [250, 500, 1000, 2000, 4000]
+methods = [ list() for _ in range(4) ]  # 4 empty lists for each method
 for N in N_values:
 	matrix_list = [[np.float64(j) for j in range(N)] for i in range(N)]
 	matrix_np = np.array(matrix_list, dtype=np.float64)
 
 	# Benchmarks
 	time_naive   = benchmark(transpose_numpy_naive, matrix_np)
+	methods[0].append(time_naive)
 	time_rowwise = benchmark(transpose_numpy_inplace, matrix_np)
+	methods[1].append(time_rowwise)
 	time_recursive = benchmark(transpose_numpy_recursive, matrix_np)
+	methods[2].append(time_recursive)
 	time_numpytranspose = benchmark(np.transpose, matrix_np)
+	methods[3].append(time_numpytranspose)
 
 	# Output results
 	print("\n=== Performance Vergleich ===")
@@ -86,3 +92,16 @@ for N in N_values:
 	print(f"Row-wise (inplace NumPy arr):  {time_rowwise:.6f} s")
 	print(f"Recursive (inplace NumPy arr): {time_recursive:.6f} s")
 	print(f"Python numpy.transpose:        {time_numpytranspose:.6f} s")
+
+# plot results
+sizes = np.array(N_values) 
+plt.plot(sizes, methods[0], 'go-', label='Row-wise (new NumPy arr)')
+plt.plot(sizes, methods[1], 'bo-', label='Row-wise (inplace NumPy arr)')
+plt.plot(sizes, methods[2], 'ro-', label='Recursive (inplace NumPy arr)')
+plt.plot(sizes, methods[3], 'co-', label='Python numpy.transpose')
+plt.xlabel('Matrix Size')
+plt.ylabel('Time (s)')
+plt.title('Performance Comparison of Transpose Operations (Numba)')
+plt.legend()
+plt.grid(True)
+plt.show() 
