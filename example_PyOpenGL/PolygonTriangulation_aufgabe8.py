@@ -62,20 +62,20 @@ class Vertex:
         
 class HalfEdge:
     def __init__(self):
-        self.origin = None
-        self.twin   = None
-        self.next   = None
-        self.prev   = None
+        self.origin : Vertex | None = None
+        self.twin   : HalfEdge | None = None
+        self.next   : HalfEdge | None = None
+        self.prev   : HalfEdge | None = None
         # expensive to keep self.face up-to-date! 
         # just self.twin.face!=None on diagonals, self.twin.face!=None on border 
-        self.face   = None 
+        self.face   : Face | None = None 
         # associated SweepEdge
-        self.sweep  = None 
+        self.sweep  : SweepEdge | None = None
     def __str__(self):
         return str(self.origin) + "*" + repr(self) + "#" + repr(self.prev) +"#" + repr(self.next)
 
 class Face:
-    def __init__(self, he : HalfEdge = None):
+    def __init__(self, he : HalfEdge | None= None):
         self.he = he
     def getHE (self) -> list[HalfEdge]:
         ''' Get all half-edges starting in self.he. '''
@@ -319,8 +319,10 @@ def makeMonotone(vertices : list[HalfEdge], face_objects : list[Face]):
         # iterate face
         he = face.he
         while True:
+            assert(he is not None)
             he = he.next
-            if not he.twin is None and he.face is None: # is diagonal
+            assert(he is not None)
+            if he.twin is not None and he.face is None: # is diagonal
                 he.face = face
                 # create new face on twin
                 te = he.twin
@@ -335,7 +337,9 @@ def makeMonotone(vertices : list[HalfEdge], face_objects : list[Face]):
     for face in face_objects:
         he = face.he
         while True:
+            assert(he is not None)
             he = he.next
+            assert(he is not None)
             he.face = face
             if he == face.he:
                 break
